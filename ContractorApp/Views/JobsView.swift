@@ -1,7 +1,10 @@
 import SwiftUI
+
 struct JobsView: View {
     @StateObject private var vm = JobsViewModel()
+    @StateObject private var invoicesVM = InvoicesViewModel()
     @State private var showAdd = false
+
     var body: some View {
         NavigationStack {
             Group {
@@ -14,16 +17,21 @@ struct JobsView: View {
                     }
                 } else {
                     List(vm.jobs) { job in
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text(job.clientName).font(.headline)
-                                Spacer()
-                                Text("$\(job.totalAmount, specifier: "%.2f")").font(.headline).foregroundColor(.green)
+                        NavigationLink(destination: JobDetailView(job: job, jobsVM: vm, invoicesVM: invoicesVM)) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    Text(job.clientName).font(.headline)
+                                    Spacer()
+                                    Text(String(format: "$%.2f", job.totalAmount)).font(.headline).foregroundColor(.green)
+                                }
+                                Text(job.address).font(.caption).foregroundColor(.secondary)
+                                Text(job.status.replacingOccurrences(of: "_", with: " ").capitalized)
+                                    .font(.caption2).padding(.horizontal, 6).padding(.vertical, 2)
+                                    .background(job.status == "completed" ? Color.green.opacity(0.1) : Color.blue.opacity(0.1))
+                                    .cornerRadius(4)
                             }
-                            Text(job.address).font(.caption).foregroundColor(.secondary)
-                            Text(job.status.capitalized).font(.caption2).padding(4).background(Color.blue.opacity(0.1)).cornerRadius(4)
+                            .padding(.vertical, 4)
                         }
-                        .padding(.vertical, 4)
                     }
                 }
             }
@@ -32,7 +40,7 @@ struct JobsView: View {
                 ToolbarItem(placement: .navigationBarTrailing) { Button { showAdd = true } label: { Image(systemName: "plus") } }
             }
             .sheet(isPresented: $showAdd) { AddJobView(vm: vm) }
-            .task { await vm.load() }
+            .task { await vm.load(); await invoicesVM.load() }
         }
     }
 }
