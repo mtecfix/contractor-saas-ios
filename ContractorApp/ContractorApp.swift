@@ -1,4 +1,11 @@
 import SwiftUI
+
 @main struct ContractorApp: App {
-    var body: some Scene { WindowGroup { ContentView() } }
+    @StateObject private var notif = NotificationManager.shared
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .onAppear { Task { await notif.requestPermission() } }
+        }
+    }
 }
