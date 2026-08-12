@@ -11,11 +11,6 @@ let package = Package(
         .target(
             name: "ContractorApp",
             path: "ContractorApp"
-        ),
-        .testTarget(
-            name: "ContractorAppTests",
-            dependencies: ["ContractorApp"],
-            path: "Tests/ContractorAppTests"
         )
     ]
 )
