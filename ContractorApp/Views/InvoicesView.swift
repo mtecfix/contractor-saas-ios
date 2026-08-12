@@ -1,6 +1,8 @@
 import SwiftUI
+
 struct InvoicesView: View {
     @StateObject private var vm = InvoicesViewModel()
+
     var body: some View {
         NavigationStack {
             Group {
@@ -9,24 +11,47 @@ struct InvoicesView: View {
                     VStack(spacing: 12) {
                         Image(systemName: "doc.text").font(.system(size: 48)).foregroundColor(.secondary)
                         Text("No invoices yet").font(.headline)
+                        Text("Create an invoice from a job").font(.caption).foregroundColor(.secondary)
                     }
                 } else {
-                    List(vm.invoices) { inv in
-                        VStack(alignment: .leading, spacing: 4) {
+                    List {
+                        Section {
                             HStack {
-                                Text(inv.clientName).font(.headline)
+                                VStack(alignment: .leading) {
+                                    Text("Outstanding").font(.caption).foregroundColor(.secondary)
+                                    Text(String(format: "$%.2f", vm.totalOutstanding)).font(.title2.bold()).foregroundColor(.orange)
+                                }
                                 Spacer()
-                                Text("$\(inv.amount, specifier: "%.2f")").font(.headline).foregroundColor(.blue)
+                                VStack(alignment: .trailing) {
+                                    Text("Collected").font(.caption).foregroundColor(.secondary)
+                                    Text(String(format: "$%.2f", vm.totalPaid)).font(.title2.bold()).foregroundColor(.green)
+                                }
                             }
-                            HStack {
-                                Text("Due: \(inv.dueDate)").font(.caption).foregroundColor(.secondary)
-                                Spacer()
-                                Text(inv.status.capitalized).font(.caption2).padding(4)
-                                    .background(inv.status == "unpaid" ? Color.orange.opacity(0.2) : Color.green.opacity(0.2))
-                                    .cornerRadius(4)
+                            .padding(.vertical, 4)
+                        }
+                        Section("All Invoices") {
+                            ForEach(vm.invoices) { inv in
+                                NavigationLink(destination: InvoiceDetailView(invoice: inv, vm: vm)) {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        HStack {
+                                            Text(inv.clientName).font(.headline)
+                                            Spacer()
+                                            Text(String(format: "$%.2f", inv.amount)).font(.headline)
+                                        }
+                                        HStack {
+                                            Text("Due: \(inv.dueDate)").font(.caption).foregroundColor(.secondary)
+                                            Spacer()
+                                            Text(inv.status.capitalized).font(.caption2).padding(.horizontal, 6).padding(.vertical, 2)
+                                                .background(inv.status == "paid" ? Color.green.opacity(0.15) : Color.orange.opacity(0.15))
+                                                .foregroundColor(inv.status == "paid" ? .green : .orange)
+                                                .cornerRadius(4)
+                                        }
+                                        Text(inv.invoiceNumber).font(.caption2).foregroundColor(.secondary)
+                                    }
+                                    .padding(.vertical, 4)
+                                }
                             }
                         }
-                        .padding(.vertical, 4)
                     }
                 }
             }
